@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Controlador REST de Carrito
+ * Controlador REST de Carritom
  * 
  * ENDPOINTS:
  * POST   /api/cart/add          - Agregar producto al carrito
