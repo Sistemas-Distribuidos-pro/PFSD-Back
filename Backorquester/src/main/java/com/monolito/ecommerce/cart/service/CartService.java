@@ -1,7 +1,6 @@
 package com.monolito.ecommerce.cart.service;
 
 import com.monolito.ecommerce.cart.model.CartItem;
-import com.monolito.ecommerce.integration.auth.AuthClient;
 import com.monolito.ecommerce.integration.catalog.CatalogClient;
 import com.monolito.ecommerce.integration.catalog.ProductSnapshot;
 import com.monolito.ecommerce.shared.exception.BusinessException;
@@ -15,11 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Servicio de Carrito de Compras
- * 
+ *
  * ALMACENAMIENTO EN MEMORIA:
  * - Map<userId, List<CartItem>>
  * - Cada usuario tiene su propia lista de items
- * 
+ *
  * COMUNICACIÓN ENTRE MÓDULOS EN EL MONOLITO:
  * - Llama directamente a ProductService y UserService
  * - NO hay HTTP ni serialización
@@ -34,22 +33,15 @@ public class CartService {
 
     // Dependencias externas vía HTTP
     private final CatalogClient catalogClient;
-    private final AuthClient authClient;
 
-    public CartService(CatalogClient catalogClient, AuthClient authClient) {
+    public CartService(CatalogClient catalogClient) {
         this.catalogClient = catalogClient;
-        this.authClient = authClient;
     }
 
     /**
      * Agregar producto al carrito
      */
     public CartItem addToCart(Long userId, Long productId, Integer quantity) {
-        // Validar que el usuario existe (comunicación interna)
-        if (!authClient.userExists(userId)) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
         // Validar que el producto existe y tiene stock
         ProductSnapshot product = catalogClient.getProductById(productId);
 
@@ -94,10 +86,6 @@ public class CartService {
      * Obtener carrito de un usuario
      */
     public List<CartItem> getCart(Long userId) {
-        if (!authClient.userExists(userId)) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
         return cartDatabase.getOrDefault(userId, new ArrayList<>());
     }
 

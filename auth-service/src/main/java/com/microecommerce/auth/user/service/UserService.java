@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UserService {
 
     private final Map<Long, User> userDatabase = new ConcurrentHashMap<>();
+    private final Map<String, Long> federatedIdentityIndex = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
 
     public User registerUser(String username, String email, String password, String fullName) {
@@ -59,7 +60,56 @@ public class UserService {
         return user;
     }
 
+    public User findOrCreateFederatedUser(String provider, String externalSubject, String email, String fullName) {
+        String identityKey = provider + ":" + externalSubject;
+        Long existingUserId = federatedIdentityIndex.get(identityKey);
+        if (existingUserId != null) {
+            User existingUser = userDatabase.get(existingUserId);
+            if (existingUser != null) {
+                return existingUser;
+            }
+        }
+
+        User byEmail = userDatabase.values().stream()
+                .filter(u -> u.getEmail().equalsIgnoreCase(email))
+                .findFirst()
+                .orElse(null);
+
+        if (byEmail != null) {
+            federatedIdentityIndex.put(identityKey, byEmail.getId());
+            return byEmail;
+        }
+
+        Long userId = idGenerator.getAndIncrement();
+        String username = generateUniqueUsernameFromEmail(email);
+        User user = new User(userId, username, email, "", fullName);
+        userDatabase.put(userId, user);
+        federatedIdentityIndex.put(identityKey, userId);
+        return user;
+    }
+
     public List<User> getAllUsers() {
         return new ArrayList<>(userDatabase.values());
+    }
+
+    private String generateUniqueUsernameFromEmail(String email) {
+        String[] emailParts = email.split("@");
+        String base = emailParts.length > 0 ? emailParts[0].trim().toLowerCase() : "user";
+        if (base.isBlank()) {
+            base = "user";
+        }
+
+        String candidate = base;
+        int suffix = 1;
+        while (usernameExists(candidate)) {
+            candidate = base + suffix;
+            suffix++;
+        }
+        return candidate;
+    }
+
+    private boolean usernameExists(String username) {
+        return userDatabase.values().stream()
+                .anyMatch(u -> u.getUsername().equalsIgnoreCase(username));
     }
 }

@@ -2,7 +2,6 @@ package com.monolito.ecommerce.order.service;
 
 import com.monolito.ecommerce.cart.model.CartItem;
 import com.monolito.ecommerce.cart.service.CartService;
-import com.monolito.ecommerce.integration.auth.AuthClient;
 import com.monolito.ecommerce.integration.catalog.CatalogClient;
 import com.monolito.ecommerce.order.model.Order;
 import com.monolito.ecommerce.order.model.OrderItem;
@@ -23,19 +22,19 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Servicio de Órdenes
- * 
+ *
  * TRANSACCIONES SIMULADAS:
  * - En un monolito con DB, usarías @Transactional para ACID
  * - Aquí simulamos rollback manual si algo falla
  * - Thread-safe con synchronized
- * 
+ *
  * VENTAJAS DEL MONOLITO:
  * - Flujo en un solo proceso
  * - Acceso directo a ProductService, CartService, UserService
  * - NO hay latencia de red
  * - NO hay serialización/deserialización
  * - FÁCIL mantener consistencia (en este caso, manual)
- * 
+ *
  * DESVENTAJAS:
  * - Si falla la app, se pierden los datos (no hay persistencia)
  * - Escalabilidad limitada a recursos de una máquina
@@ -50,18 +49,16 @@ public class OrderService {
     // Dependencias externas
     private final CartService cartService;
     private final CatalogClient catalogClient;
-    private final AuthClient authClient;
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
-    public OrderService(CartService cartService, CatalogClient catalogClient, AuthClient authClient) {
+    public OrderService(CartService cartService, CatalogClient catalogClient) {
         this.cartService = cartService;
         this.catalogClient = catalogClient;
-        this.authClient = authClient;
     }
 
     /**
      * Crear orden desde el carrito
-     * 
+     *
      * SIMULACIÓN DE TRANSACCIÓN:
      * 1. Validar usuario y carrito
      * 2. Validar stock de todos los productos
@@ -69,18 +66,13 @@ public class OrderService {
      * 4. Si algo falla, hacer ROLLBACK manual
      * 5. Crear orden
      * 6. Limpiar carrito
-     * 
+     *
      * En un monolito real con BD:
-     * 
+     *
      * @Transactional haría esto automáticamente
      *                Si algo falla, la operación se revierte
      */
     public synchronized Order createOrder(Long userId) {
-        // PASO 1: Validar usuario
-        if (!authClient.userExists(userId)) {
-            throw new BusinessException("Usuario no encontrado");
-        }
-
         // PASO 2: Obtener carrito
         List<CartItem> cartItems = cartService.getCart(userId);
 

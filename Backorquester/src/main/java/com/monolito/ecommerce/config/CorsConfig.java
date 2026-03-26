@@ -1,34 +1,23 @@
 package com.monolito.ecommerce.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Configuración CORnS para permitir solicitudes desde el frontend.
- * 
- * Permite que hhaplicaciones en otros dominios/puertos accedan a la API.kkk
- * Incluye:
- * - Desarrollo local: localhost:3000, localhost:3001, localhost:5173
- * - Projjducción: S3 bucket frontend
- */
-
-
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    @Value("${cors.allowed-origins:http://localhost:3000,http://127.0.0.1:3000}")
+    private String allowedOrigins;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        String[] origins = allowedOrigins.split(",");
         registry.addMapping("/api/**")
-                .allowedOrigins(
-                    "http://localhost:3000", 
-                    "http://localhost:3001", 
-                    "http://localhost:5173",
-                    "http://local-ecommerce-frontend-414813662494.s3-website-us-east-1.amazonaws.com",
-                    "*"
-                )
+                .allowedOrigins(origins)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
+                .allowedHeaders("Authorization", "Content-Type")
                 .allowCredentials(true)
                 .maxAge(3600);
     }
