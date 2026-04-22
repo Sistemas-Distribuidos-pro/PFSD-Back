@@ -22,7 +22,7 @@ No hay Kafka, Spark ni una capa event-driven todavía. El flujo actual es sincro
 
 ## Documentación por servicio
 
-- [Backorquester/README.md](Backorquester/README.md)
+- [order-service/README.md](order-service/README.md)
 - [auth-service/README.md](auth-service/README.md)
 - [catalog-service/README.md](catalog-service/README.md)
 
@@ -37,7 +37,7 @@ No existe un `pom.xml` raíz. Cada servicio se compila y ejecuta desde su carpet
 ```bash
 cd auth-service && mvn spring-boot:run
 cd catalog-service && mvn spring-boot:run
-cd Backorquester && mvn spring-boot:run
+cd order-service && mvn spring-boot:run
 ```
 
 Para empaquetar:
@@ -45,7 +45,7 @@ Para empaquetar:
 ```bash
 cd auth-service && mvn clean package
 cd catalog-service && mvn clean package
-cd Backorquester && mvn clean package
+cd order-service && mvn clean package
 ```
 
 ## Endpoints clave
