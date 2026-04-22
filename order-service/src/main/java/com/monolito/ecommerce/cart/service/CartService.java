@@ -42,6 +42,14 @@ public class CartService {
      * Agregar producto al carrito
      */
     public CartItem addToCart(Long userId, Long productId, Integer quantity) {
+        if (productId == null) {
+            throw new BusinessException("productId es obligatorio");
+        }
+
+        if (quantity == null || quantity <= 0) {
+            throw new BusinessException("quantity debe ser mayor a 0");
+        }
+
         // Validar que el producto existe y tiene stock
         ProductSnapshot product = catalogClient.getProductById(productId);
 

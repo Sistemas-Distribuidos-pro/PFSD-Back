@@ -1,10 +1,14 @@
 package com.monolito.ecommerce.order.model;
 
 /**
- * DTO para crear orden
+ * DTO  para crear orden.
+ *
+ * El usuario efectivo se obtiene del JWT. El campo userId se mantiene
+ * solo para compatibilidad con clientes anteriores y se valida contra
+ * el sujeto autenticado.
  */
 public class CreateOrderRequest {
-    
+
     private Long userId;
 
     public CreateOrderRequest() {

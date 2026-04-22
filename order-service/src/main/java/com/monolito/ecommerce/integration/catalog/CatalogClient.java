@@ -48,7 +48,8 @@ public class CatalogClient {
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException("Producto", productId);
         } catch (HttpClientErrorException ex) {
-            throw new BusinessException("catalog-service respondió " + ex.getStatusCode().value() + " al consultar producto");
+            throw new BusinessException(
+                    "catalog-service respondió " + ex.getStatusCode().value() + " al consultar producto");
         } catch (ResourceNotFoundException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -86,7 +87,8 @@ public class CatalogClient {
             RequestEntity<Void> request = new RequestEntity<>(buildAuthHeaders(), HttpMethod.PUT, uri);
             restTemplate.exchange(request, String.class);
         } catch (HttpClientErrorException ex) {
-            throw new BusinessException("catalog-service respondió " + ex.getStatusCode().value() + " al actualizar stock");
+            throw new BusinessException(
+                    "catalog-service respondió " + ex.getStatusCode().value() + " al actualizar stock");
         } catch (Exception ex) {
             throw new BusinessException("No se pudo actualizar stock en catalog-service");
         }

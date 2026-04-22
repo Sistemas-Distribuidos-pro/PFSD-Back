@@ -35,5 +35,3 @@ Servicio de órdenes y checkout sincrono del backend PFSD. Vive en `8081` y cent
 4. Se valida stock en `catalog-service`.
 5. Se descuenta inventario y se persiste la orden en memoria.
 6. Se limpia el carrito.
-
-No hay Kafka ni eventos por ahora.
