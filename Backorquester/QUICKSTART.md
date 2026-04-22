@@ -1,11 +1,11 @@
-# 🎯 GUÍA RÁPIDA DE INICIO
+# QUICKSTART - order-service
 
 ## ✅ Compilado Exitosamente
 
-El proyecto se ha compilado y empaquetado correctamente. El artefacto generado es:
+El servicio se ha compilado y empaquetado correctamente. El artefacto generado es:
 
 ```
-target/ecommerce-monolito-1.0.0.jar
+target/order-service-1.0.0.jar
 ```
 
 ---
@@ -24,7 +24,7 @@ mvn spring-boot:run
 java -jar target/ecommerce-monolito-1.0.0.jar
 ```
 
-La aplicación estará disponible en: **http://localhost:8080**
+La aplicación estará disponible en: **http://localhost:8081**
 
 ---
 
@@ -33,12 +33,12 @@ La aplicación estará disponible en: **http://localhost:8080**
 Una vez iniciada la aplicación, deberías ver en la consola:
 
 ```
-╔════════════════════════════════════════════════════════════╗
-║   E-COMMERCE MONOLITO - Sistema Académico                 ║
-║   Arquitectura: Monolito Modular                          ║
+╔═══════════════════════════════════════════════════════════╗
+║   ORDER SERVICE - PFSD Backend                            ║
+║   Arquitectura: Servicio sincrono de ordenes              ║
 ║   Almacenamiento: En Memoria (ConcurrentHashMap)          ║
-║   Puerto: 8080                                            ║
-╚════════════════════════════════════════════════════════════╝
+║   Puerto: 8081                                            ║
+╚═══════════════════════════════════════════════════════════╝
 ```
 
 ---
@@ -47,7 +47,7 @@ Una vez iniciada la aplicación, deberías ver en la consola:
 
 ```bash
 # Crear un usuario
-curl -X POST http://localhost:8080/api/users/register \
+curl -X POST http://localhost:8081/api/users/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "test",
@@ -57,17 +57,17 @@ curl -X POST http://localhost:8080/api/users/register \
   }'
 
 # Listar usuarios
-curl http://localhost:8080/api/users
+curl http://localhost:8081/api/users
 ```
 
 ---
 
 ## 📂 Archivos Importantes
 
-1. **README.md** - Documentación completa del proyecto
+1. **README.md** - Documentación general del backend
 2. **TESTING.md** - Guía de pruebas con ejemplos curl
 3. **api-tests.http** - Archivo para probar en VSCode/IntelliJ
-4. **pom.xml** - Configuración Maven
+4. **pom.xml** - Configuración Maven del order-service
 5. **application.properties** - Configuración de Spring Boot
 
 ---
@@ -76,7 +76,7 @@ curl http://localhost:8080/api/users
 
 ```
 src/main/java/com/monolito/ecommerce/
-├── EcommerceMonolitoApplication.java  ← Clase principal
+├── OrderServiceApplication.java       ← Clase principal
 ├── user/                               ← Módulo de usuarios
 │   ├── controller/
 │   ├── service/
@@ -102,13 +102,13 @@ src/main/java/com/monolito/ecommerce/
 
 ## 🎓 Conceptos Demostrados
 
-✅ **Monolito Modular**: No es código espagueti, está bien organizado  
-✅ **Comunicación In-Memory**: Latencia cero entre módulos  
-✅ **Thread-Safety**: ConcurrentHashMap + synchronized  
-✅ **Transacciones Simuladas**: Rollback manual sin base de datos  
-✅ **Arquitectura en Capas**: Controller → Service → Model  
-✅ **REST API**: Endpoints bien definidos para frontend  
-✅ **Manejo de Errores**: GlobalExceptionHandler centralizado  
+✅ **Servicio sincronico**: Checkout y carrito en el mismo proceso
+✅ **Comunicación In-Memory**: Latencia cero entre componentes
+✅ **Thread-Safety**: ConcurrentHashMap + synchronized
+✅ **Transacciones Simuladas**: Rollback manual sin base de datos
+✅ **Arquitectura en Capas**: Controller → Service → Model
+✅ **REST API**: Endpoints bien definidos para frontend
+✅ **Manejo de Errores**: GlobalExceptionHandler centralizado
 
 ---
 

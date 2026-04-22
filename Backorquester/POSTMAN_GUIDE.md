@@ -1,4 +1,4 @@
-# 📮 Guía de Postman - E-Commerce Monolito
+# Guía de Postman - order-service
 
 ## 🚀 Cómo Importar la Colección
 
@@ -75,7 +75,7 @@ Secuencia completa de prueba desde registro hasta verificación de stock.
 # En terminal PowerShell
 mvn spring-boot:run
 ```
-Espera a que aparezca: `Started EcommerceMonolitoApplication`
+Espera a que aparezca: `Started OrderServiceApplication`
 
 ### Paso 2: Prueba básica
 1. Ejecuta: **Usuarios → Listar Todos los Usuarios** (debería retornar array vacío)
@@ -203,7 +203,7 @@ Actualiza `userId`, `productId`, `orderId` después de cada creación:
 Usa **Collection Runner**:
 1. Click derecho en carpeta **🧪 Flujo Completo E2E**
 2. Selecciona **Run collection**
-3. Click **Run E-Commerce Monolito - API**
+3. Click **Run order-service - API**
 4. Ver resultados en tiempo real
 
 ### 3. Exportar Resultados

@@ -1,6 +1,6 @@
-# ✅ PROYECTO COMPLETADO EXITOSAMENTE
+# Resumen del order-service
 
-## 🎉 Backend Monolítico E-Commerce - Listo para Usar
+## Backend PFSD listo para usar
 
 ---
 
@@ -8,13 +8,12 @@
 
 ### ✅ Lo que se ha creado:
 
-1. **Backend completo** de e-commerce monolítico modular
-2. **4 módulos funcionales**: User, Product, Cart, Order
-3. **1 módulo compartido**: Shared (excepciones, DTOs)
-4. **Almacenamiento en memoria** con ConcurrentHashMap
-5. **API REST completa** con 20+ endpoints
-6. **Simulación de transacciones** con rollback manual
-7. **Documentación exhaustiva** académica y técnica
+1. **Backend dividido en servicios**: auth, catalog y order
+2. **Flujo sincrono de carrito y checkout** en `order-service`
+3. **Almacenamiento en memoria** con ConcurrentHashMap dentro del servicio de órdenes
+4. **API REST completa** para usuarios, productos, carrito y ordenes
+5. **Simulación de transacciones** con rollback manual en checkout
+6. **Documentación operativa** para levantar y probar cada servicio
 
 ---
 
@@ -30,7 +29,7 @@
 ## 📂 ARCHIVOS CREADOS
 
 ### Documentación
-- ✅ **README.md** - Explicación académica completa de monolitos
+- ✅ **README.md** - Descripción general del backend PFSD
 - ✅ **TESTING.md** - Guía de pruebas con ejemplos curl
 - ✅ **QUICKSTART.md** - Guía rápida de inicio
 - ✅ **api-tests.http** - Pruebas para VSCode/IntelliJ
@@ -69,7 +68,7 @@
 - `ErrorResponse.java` - Respuesta de error
 
 #### Aplicación Principal
-- `EcommerceMonolitoApplication.java` - Main class con banner
+- `OrderServiceApplication.java` - Main class con banner
 
 ### Configuración
 - ✅ `pom.xml` - Java 17, Spring Boot 4.0.3, Maven
@@ -115,14 +114,12 @@
 
 ## 🏗️ ARQUITECTURA IMPLEMENTADA
 
-### Monolito Modular
+### Servicio de ordenes
 ```
-PROCESO ÚNICO (JVM)
-├── User Module
-├── Product Module
-├── Cart Module
-├── Order Module
-└── Shared Module
+order-service (8081)
+├── Cart
+├── Orders
+└── Shared DTOs / exceptions
 ```
 
 ### Comunicación Interna
@@ -196,26 +193,15 @@ GET    /api/orders
 
 ## 🎓 CONCEPTOS ACADÉMICOS DEMOSTRADOS
 
-### ✅ Fundamentos de Monolitos
-- Definición técnica precisa
-- Características de un proceso único
-- Memoria compartida
-- Despliegue atómico
+### ✅ Flujo sincrono
+- Checkout guiado por JWT
+- Validacion de stock contra catalog-service
+- Descuento y rollback manual de inventario
 
-### ✅ Monolito Modular vs Caótico
-- Organización en módulos
-- Separación de responsabilidades
-- Arquitectura en capas
-
-### ✅ Comunicación Interna
-- Diferencia entre monolito y microservicios
-- Latencia cero
-- Sin serialización HTTP
-
-### ✅ Transacciones Simuladas
-- Rollback manual
-- Comparación con @Transactional
-- Control de inventario thread-safe
+### ✅ Separacion por servicio
+- auth-service para autenticacion
+- catalog-service para productos y stock
+- order-service para carrito y ordenes
 
 ### ✅ Thread-Safety
 - ConcurrentHashMap

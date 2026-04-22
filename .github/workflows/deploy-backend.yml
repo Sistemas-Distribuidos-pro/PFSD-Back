@@ -10,7 +10,7 @@ on:
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
   BACKEND_APP_DIR: ${{ vars.BACKEND_APP_DIR || '/opt/ecommerce' }}
-  BACKEND_PORT: ${{ vars.BACKEND_PORT || '8081' }}
+  ORDER_SERVICE_PORT: ${{ vars.ORDER_SERVICE_PORT || '8081' }}
   EC2_SSH_USER: ${{ vars.EC2_SSH_USER || 'ubuntu' }}
   EC2_HOST: ${{ secrets.EC2_HOST || vars.EC2_HOST || '100.53.155.105' }}
   EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID || 'i-0348f34ea246a89e0' }}
@@ -32,13 +32,13 @@ jobs:
           cache: maven
 
       - name: Build JAR
-        run: mvn clean package -DskipTests
+        run: cd order-service && mvn clean package -DskipTests
 
       - name: Resolve artifact
         id: artifact
         shell: bash
         run: |
-          JAR_PATH=$(ls target/*.jar | head -n 1)
+          JAR_PATH=$(ls order-service/target/*.jar | head -n 1)
           if [ -z "$JAR_PATH" ]; then
             echo "No se encontró JAR en target/"
             exit 1
@@ -111,38 +111,38 @@ jobs:
             nohup java -jar app.jar > backend.log 2>&1 &
             JAVA_PID=$!
             echo "Backend iniciado con PID: $JAVA_PID"
-            
+
             # Esperar a que Spring Boot arranque
             echo "Esperando 55 segundos a que Spring Boot arranque completamente..."
             sleep 55
-            
+
             # Verificar que el proceso siga corriendo
             if ! kill -0 $JAVA_PID 2>/dev/null; then
               echo "❌ El proceso Java murió. Últimas líneas del log:"
               tail -30 backend.log
               exit 1
             fi
-            
+
             # Healthcheck con reintentos
             for i in 1 2 3 4 5; do
               echo "Intento $i de 5 - Probando conexión HTTP..."
-              
-              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "http://127.0.0.1:${{ env.BACKEND_PORT }}/api/users" 2>/dev/null || echo "000")
-              
+
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "http://127.0.0.1:${{ env.ORDER_SERVICE_PORT }}/health" 2>/dev/null || echo "000")
+
               echo "Código HTTP: $HTTP_CODE"
-              
+
               # Cualquier respuesta que no sea 000 (error de conexión) o 5xx es éxito
               if [ "$HTTP_CODE" != "000" ] && [ "$HTTP_CODE" -lt 500 ]; then
                 echo "✓ Backend respondiendo correctamente (HTTP $HTTP_CODE)"
                 exit 0
               fi
-              
+
               if [ $i -lt 5 ]; then
                 echo "Esperando 5 segundos antes del siguiente intento..."
                 sleep 5
               fi
             done
-            
+
             # Si llegamos aquí, el healthcheck falló
             echo ""
             echo "❌ Backend no pasó el healthcheck después de 5 intentos"
@@ -153,4 +153,4 @@ jobs:
           EOF
 
       - name: Result
-        run: echo "Backend desplegado en http://${{ steps.ec2.outputs.host }}:${{ env.BACKEND_PORT }}"
+        run: echo "Order service desplegado en http://${{ steps.ec2.outputs.host }}:${{ env.ORDER_SERVICE_PORT }}"

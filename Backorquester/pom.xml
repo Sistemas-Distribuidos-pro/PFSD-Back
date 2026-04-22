@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.monolito</groupId>
-	<artifactId>ecommerce-monolito</artifactId>
+	<artifactId>order-service</artifactId>
 	<version>1.0.0</version>
-	<name>E-Commerce Monolito</name>
-	<description>Sistema monolítico modular de e-commerce académico con almacenamiento en memoria</description>
+	<name>Order Service</name>
+	<description>Servicio sincrono de ordenes, carrito y checkout con almacenamiento en memoria</description>
 	<url/>
 	<licenses>
 		<license/>

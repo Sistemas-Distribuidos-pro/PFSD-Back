@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "ecommerce-monolito-2026",
-		"name": "E-Commerce Monolito - API",
-		"description": "Colección completa de endpoints para el sistema monolítico de e-commerce.\n\n**Base URL:** http://localhost:8081\n\n**Módulos:**\n- Usuarios (registro, login, listado)\n- Productos (CRUD, inventario)\n- Carrito (gestión de compras)\n- Órdenes (procesamiento con transacciones)\n\n**Almacenamiento:** En memoria (ConcurrentHashMap)\n**Framework:** Spring Boot 4.0.3\n**Java:** 17",
+		"_postman_id": "order-service-2026",
+		"name": "Order Service - API",
+		"description": "Colección de endpoints del servicio de ordenes y checkout sincrono.\n\n**Base URL:** http://localhost:8081\n\n**Alcance:**\n- Carrito\n- Órdenes\n- Checkout sincrono\n- Integración con auth-service y catalog-service\n\n**Almacenamiento:** En memoria (ConcurrentHashMap)\n**Framework:** Spring Boot 4.0.3\n**Java:** 17",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -214,7 +214,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"userId\": {{userId}},\n  \"productId\": {{productId}},\n  \"quantity\": 1\n}"
+							"raw": "{\n  \"productId\": {{productId}},\n  \"quantity\": 1\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/cart/add",
@@ -285,14 +285,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"userId\": {{userId}}\n}"
+							"raw": "{}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/orders",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "orders"]
 						},
-						"description": "Crea una orden desde el carrito del usuario.\n\n**Proceso:**\n1. Valida stock de todos los productos\n2. Descuenta inventario\n3. Crea la orden\n4. Limpia el carrito\n\n**Rollback:** Si falla cualquier paso, revierte los cambios."
+						"description": "Crea una orden desde el carrito autenticado.\n\nEl usuario se toma del JWT, no del body.\n\n**Proceso:**\n1. Valida stock de todos los productos\n2. Descuenta inventario\n3. Crea la orden\n4. Limpia el carrito\n\n**Rollback:** Si falla cualquier paso, revierte los cambios."
 					},
 					"response": []
 				},

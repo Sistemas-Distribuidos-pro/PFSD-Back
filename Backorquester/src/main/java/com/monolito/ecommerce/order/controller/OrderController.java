@@ -37,9 +37,12 @@ public class OrderController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<Order>> createOrder(
-            @RequestBody CreateOrderRequest request,
+            @RequestBody(required = false) CreateOrderRequest request,
             Authentication authentication) {
         Long authenticatedUserId = getAuthenticatedUserId(authentication);
+        if (request != null && request.getUserId() != null && !authenticatedUserId.equals(request.getUserId())) {
+            throw new AccessDeniedException("No tienes permisos para crear una orden para otro usuario");
+        }
         Order order = orderService.createOrder(authenticatedUserId);
 
         return ResponseEntity

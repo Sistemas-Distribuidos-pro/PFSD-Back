@@ -1,263 +1,79 @@
-# 🏛️ E-COMMERCE MONOLITO - Sistema Académico
+# PFSD Backend
 
-## 📋 Descripción
+Base backend del proyecto PFSD antes de introducir eventos. El sistema ya está dividido en tres servicios Spring Boot que cooperan por HTTP:
 
-Este proyecto es un **sistema monolítico modular** de e-commerce desarrollado con propósitos académicos para demostrar los fundamentos, ventajas y desventajas de la arquitectura monolítica.
+- `order-service` en `8081`
+- `auth-service` en `8082`
+- `catalog-service` en `8083`
 
----
+No hay Kafka, Spark ni una capa event-driven todavía. El flujo actual es sincrono: el cliente obtiene un JWT en `auth-service`, consume catálogo en `catalog-service` y completa carrito/checkout en `order-service`.
 
-## 🎯 ¿QUÉ ES UN MONOLITO?
+## Arquitectura actual
 
-### Definición Técnica
+`auth-service` valida el token de Google y emite el JWT de la aplicación. `catalog-service` expone el dominio de productos. `order-service` centraliza carrito, órdenes y checkout usando ese JWT para identificar al usuario.
 
-Un **monolito** es una aplicación que cumple con las siguientes características:
+### Flujo sincrono de órdenes
 
-1. ✅ **Un único proceso en ejecución**
-   - Toda la aplicación corre en una sola JVM
-   - No hay procesos separados para diferentes funcionalidades
+1. El frontend inicia sesión con Google y llama a `POST /api/auth/exchange`.
+2. `auth-service` devuelve un JWT propio con `subject = userId`.
+3. El frontend agrega items al carrito con `POST /api/cart/add` en `order-service`.
+4. El checkout se completa con `POST /api/orders` en `order-service`.
+5. `order-service` valida stock contra `catalog-service`, descuenta inventario y limpia el carrito.
 
-2. ✅ **Un único artefacto desplegable**
-   - Se genera un solo archivo `.jar` o `.war`
-   - El despliegue es atómico: todo o nada
+## Documentación por servicio
 
-3. ✅ **Stack tecnológico unificado**
-   - Java 17 + Spring Boot
-   - Todo el código comparte las mismas dependencias
+- [Backorquester/README.md](Backorquester/README.md)
+- [auth-service/README.md](auth-service/README.md)
+- [catalog-service/README.md](catalog-service/README.md)
 
-4. ✅ **Memoria compartida**
-   - Todos los módulos acceden a la misma memoria (heap)
-   - Comunicación directa por llamadas a métodos (in-memory)
-   - Latencia CERO entre módulos
+## Variables de entorno
 
-5. ✅ **SIN comunicación HTTP interna**
-   - Los módulos NO se comunican por REST entre sí
-   - Todo es invocación directa de métodos Java
+Usa [`.env.example`](.env.example) como referencia. Los nombres viejos se mantienen como alias temporales cuando hace falta, pero el nombre preferido para el servicio de 8081 es `ORDER_SERVICE_PORT`.
 
-6. ✅ **SIN base de datos externa (para este demo)**
-   - Almacenamiento en memoria usando `ConcurrentHashMap`
-   - Los datos se pierden al reiniciar (volátil)
+## Cómo levantarlo
 
----
+No existe un `pom.xml` raíz. Cada servicio se compila y ejecuta desde su carpeta:
 
-## 📦 TIPO DE MONOLITO: Modular
-
-### ❌ NO es un Monolito Caótico
-
-Este proyecto demuestra que **NO todo monolito es desorganizado**. Está estructurado en **módulos internos** con responsabilidades bien definidas:
-
-```
-com.monolito.ecommerce/
-├── user/           → Gestión de usuarios (registro, login)
-├── product/        → Catálogo de productos e inventario
-├── cart/           → Carrito de compras
-├── order/          → Procesamiento de órdenes
-└── shared/         → Componentes compartidos (excepciones, DTOs)
+```bash
+cd auth-service && mvn spring-boot:run
+cd catalog-service && mvn spring-boot:run
+cd Backorquester && mvn spring-boot:run
 ```
 
-Cada módulo tiene su propia arquitectura en capas:
-- **Controller**: Endpoints REST
-- **Service**: Lógica de negocio
-- **Model**: Modelos de dominio y DTOs
+Para empaquetar:
 
----
-
-## 🏗️ Arquitectura del Sistema
-
-### Comunicación Entre Módulos (In-Memory)
-
-```
-┌─────────────────────────────────────────────────┐
-│           PROCESO ÚNICO (JVM)                   │
-│                                                 │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐ │
-│  │  User    │    │ Product  │    │   Cart   │ │
-│  │ Service  │◄───┤ Service  │◄───┤ Service  │ │
-│  └──────────┘    └──────────┘    └──────────┘ │
-│       ▲               ▲               ▲        │
-│       │               │               │        │
-│       └───────────────┴───────────────┘        │
-│                       │                        │
-│                  ┌──────────┐                  │
-│                  │  Order   │                  │
-│                  │ Service  │                  │
-│                  └──────────┘                  │
-│                                                 │
-│     MEMORIA COMPARTIDA (ConcurrentHashMap)     │
-│  ┌──────────────────────────────────────────┐  │
-│  │  Map<Long, User>                         │  │
-│  │  Map<Long, Product>                      │  │
-│  │  Map<Long, Order>                        │  │
-│  │  Map<Long, List<CartItem>>               │  │
-│  └──────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────┘
+```bash
+cd auth-service && mvn clean package
+cd catalog-service && mvn clean package
+cd Backorquester && mvn clean package
 ```
 
-**Ventaja clave**: Latencia CERO entre módulos (no hay red de por medio)
+## Endpoints clave
 
----
+- `auth-service`:
+  - `POST /api/auth/exchange`
+  - `GET /api/auth/me`
+  - `POST /api/users/register`
+  - `POST /api/users/login`
+  - `GET /api/users`
+- `catalog-service`:
+  - `POST /api/products`
+  - `GET /api/products`
+  - `GET /api/products/{id}`
+  - `PUT /api/products/{id}/stock`
+- `order-service`:
+  - `POST /api/cart/add`
+  - `GET /api/cart/{userId}`
+  - `DELETE /api/cart/{userId}`
+  - `POST /api/orders`
+  - `GET /api/orders/{id}`
+  - `GET /api/orders/user/{userId}`
 
-## 💾 Almacenamiento en Memoria
+## Notas de compatibilidad
 
-### Implementación
-
-Se utilizan estructuras de datos thread-safe en memoria:
-
-```java
-// Almacenamiento
-ConcurrentHashMap<Long, User>
-ConcurrentHashMap<Long, Product>
-ConcurrentHashMap<Long, Order>
-ConcurrentHashMap<Long, List<CartItem>>
-
-// Generación de IDs
-AtomicLong (auto-incremental)
-```
-
-### Características
-
-- ✅ **Thread-safe**: `ConcurrentHashMap` permite acceso concurrente
-- ✅ **Sin ORM/JPA**: No hay capa de persistencia
-- ⚠️ **Volátil**: Los datos se pierden al reiniciar
-- ⚠️ **No escalable**: Limitado a memoria RAM de una máquina
-
----
-
-## 🔄 Transacciones Simuladas
-
-### El Problema
-
-Sin base de datos, NO tenemos transacciones ACID automáticas. Este proyecto **simula manualmente** el comportamiento transaccional.
-
-### Ejemplo: Crear Orden
-
-```java
-// PSEUDO-CÓDIGO de la transacción simulada
-try {
-    // 1. Validar stock de todos los productos
-    for (item : cartItems) {
-        if (!hasStock(item)) throw error;
-    }
-    
-    // 2. Descontar inventario
-    for (item : cartItems) {
-        decreaseStock(item);  // Guarda cambios para rollback
-    }
-    
-    // 3. Crear orden
-    createOrder();
-    
-    // 4. Limpiar carrito
-    clearCart();
-    
-} catch (Exception e) {
-    // ROLLBACK MANUAL: Revertir todos los cambios
-    for (change : stockChanges) {
-        increaseStock(change);
-    }
-    throw error;
-}
-```
-
-### Notas Académicas
-
-- ✅ **Con DB**: `@Transactional` haría esto AUTOMÁTICAMENTE
-- ✅ **Rollback**: Se revertiría todo sin código extra
-- ⚠️ **Aquí**: Lo hacemos manual para demostrar el concepto
-
----
-
-## 🚀 Funcionalidades
-
-### 1️⃣ Gestión de Usuarios
-
-- Registrar usuario
-- Login simple (autenticación básica)
-- Listar usuarios
-
-### 2️⃣ Catálogo de Productos
-
-- Crear productos
-- Listar productos
-- Filtrar por categoría
-- Actualizar stock y precios
-
-### 3️⃣ Carrito de Compras
-
-- Agregar productos al carrito
-- Calcular total
-- Eliminar items
-- Vaciar carrito
-
-### 4️⃣ Procesamiento de Órdenes
-
-- Crear orden desde carrito
-- Validar stock en tiempo real
-- Descontar inventario
-- Simulación de transacciones con rollback
-- Historial de órdenes
-
----
-
-## 📡 API REST Endpoints
-
-### Usuarios
-
-```http
-POST   /api/users/register     # Registrar usuario
-POST   /api/users/login        # Login
-GET    /api/users              # Listar todos
-GET    /api/users/{id}         # Obtener por ID
-```
-
-### Productos
-
-```http
-POST   /api/products                    # Crear producto
-GET    /api/products                    # Listar todos
-GET    /api/products/{id}               # Obtener por ID
-GET    /api/products/category/{cat}     # Filtrar por categoría
-PUT    /api/products/{id}/stock         # Actualizar stock
-PUT    /api/products/{id}/price         # Actualizar precio
-```
-
-### Carrito
-
-```http
-POST   /api/cart/add                    # Agregar al carrito
-GET    /api/cart/{userId}               # Obtener carrito
-DELETE /api/cart/{userId}               # Vaciar carrito
-DELETE /api/cart/{userId}/item/{id}     # Eliminar item
-```
-
-### Órdenes
-
-```http
-POST   /api/orders                      # Crear orden
-GET    /api/orders/{id}                 # Obtener por ID
-GET    /api/orders/user/{userId}        # Órdenes de usuario
-GET    /api/orders                      # Listar todas
-```
-
----
-
-## 🛠️ Tecnologías
-
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| Java | 17 | Lenguaje base |
-| Spring Boot | 4.0.3 | Framework web |
-| Maven | 3.x | Gestión de dependencias |
-| Spring MVC | - | REST Controllers |
-
-**SIN**:
-- ❌ Base de datos (H2, MySQL, PostgreSQL)
-- ❌ JPA/Hibernate
-- ❌ Microservicios
-- ❌ Docker (opcional para extensión)
-
----
-
-## ⚙️ Instalación y Ejecución
+- `BACKORQUESTER_PORT` puede seguir funcionando temporalmente como alias del puerto de `order-service`.
+- El checkout no necesita un body con `userId`; usa el `subject` del JWT.
+- La separación entre servicios es real, pero el flujo sigue siendo sincrono y transaccional a nivel de aplicación.
 
 ### Requisitos Previos
 

@@ -1,4 +1,4 @@
-# Configuración GitHub Actions - Backend
+# Configuracion GitHub Actions - order-service
 
 ## Valores desde Terraform
 
@@ -8,7 +8,7 @@ Basado en `terraform output` del ambiente **local**:
 EC2 Host: 3.226.76.177
 EC2 Instance ID: i-011535c7fc838a8fd
 Backend URL: http://3.226.76.177:8081
-Backend Port: 8081
+Order Service Port: 8081
 SSH User: ubuntu
 Deploy Path: /opt/ecommerce
 ```
@@ -46,11 +46,17 @@ gh variable set BACKEND_APP_DIR --body "/opt/ecommerce"
 ```
 **Default:** `/opt/ecommerce` (ya configurado en workflow)
 
-### 5. BACKEND_PORT
+### 5. ORDER_SERVICE_PORT
+```bash
+gh variable set ORDER_SERVICE_PORT --body "8081"
+```
+**Default:** `8081` (ya configurado en workflow)
+
+### 6. BACKEND_PORT
 ```bash
 gh variable set BACKEND_PORT --body "8081"
 ```
-**Default:** `8081` (ya configurado en workflow)
+**Compatibilidad temporal:** alias del puerto de `order-service`.
 
 ---
 
@@ -73,6 +79,8 @@ Si prefieres usar la UI de GitHub:
    - Nombre: `BACKEND_APP_DIR`, Valor: `/opt/ecommerce`
    - Click **New repository variable**
    - Nombre: `BACKEND_PORT`, Valor: `8081`
+   - Nombre: `ORDER_SERVICE_PORT`, Valor: `8081`
+   - Nombre: `BACKEND_PORT`, Valor: `8081` (compatibilidad)
 
 ---
 
@@ -88,7 +96,7 @@ git push origin main
 
 Verifica el despliegue:
 ```bash
-curl http://3.226.76.177:8081/api/users
+curl http://3.226.76.177:8081/health
 ```
 
 ---

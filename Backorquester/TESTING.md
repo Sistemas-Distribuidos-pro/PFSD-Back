@@ -1,4 +1,4 @@
-# 🧪 Pruebas del E-Commerce Monolito
+# Pruebas del order-service
 
 Este archivo contiene ejemplos completos para probar todos los endpoints del sistema.
 
@@ -10,7 +10,7 @@ Este archivo contiene ejemplos completos para probar todos los endpoints del sis
 
 ```bash
 # Usuario 1 - Juan
-curl -X POST http://localhost:8080/api/users/register \
+curl -X POST http://localhost:8081/api/users/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "juan",
@@ -20,7 +20,7 @@ curl -X POST http://localhost:8080/api/users/register \
   }'
 
 # Usuario 2 - María
-curl -X POST http://localhost:8080/api/users/register \
+curl -X POST http://localhost:8081/api/users/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "maria",
@@ -49,7 +49,7 @@ curl -X POST http://localhost:8080/api/users/register \
 ### PASO 2: Login de Usuario
 
 ```bash
-curl -X POST http://localhost:8080/api/users/login \
+curl -X POST http://localhost:8081/api/users/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "juan",
@@ -62,7 +62,7 @@ curl -X POST http://localhost:8080/api/users/login \
 ### PASO 3: Listar Usuarios
 
 ```bash
-curl http://localhost:8080/api/users
+curl http://localhost:8081/api/users
 ```
 
 ---
@@ -71,7 +71,7 @@ curl http://localhost:8080/api/users
 
 ```bash
 # Laptop
-curl -X POST http://localhost:8080/api/products \
+curl -X POST http://localhost:8081/api/products \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Laptop Dell Inspiron 15",
@@ -82,7 +82,7 @@ curl -X POST http://localhost:8080/api/products \
   }'
 
 # Mouse
-curl -X POST http://localhost:8080/api/products \
+curl -X POST http://localhost:8081/api/products \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Mouse Logitech MX Master 3",
@@ -93,7 +93,7 @@ curl -X POST http://localhost:8080/api/products \
   }'
 
 # Teclado
-curl -X POST http://localhost:8080/api/products \
+curl -X POST http://localhost:8081/api/products \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Teclado Mecánico Keychron K2",
@@ -104,7 +104,7 @@ curl -X POST http://localhost:8080/api/products \
   }'
 
 # Monitor
-curl -X POST http://localhost:8080/api/products \
+curl -X POST http://localhost:8081/api/products \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Monitor LG UltraWide 34\"",
@@ -115,7 +115,7 @@ curl -X POST http://localhost:8080/api/products \
   }'
 
 # Audífonos
-curl -X POST http://localhost:8080/api/products \
+curl -X POST http://localhost:8081/api/products \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Audífonos Sony WH-1000XM4",
@@ -132,13 +132,13 @@ curl -X POST http://localhost:8080/api/products \
 
 ```bash
 # Todos los productos
-curl http://localhost:8080/api/products
+curl http://localhost:8081/api/products
 
 # Productos de una categoría
-curl http://localhost:8080/api/products/category/Electrónica
+curl http://localhost:8081/api/products/category/Electrónica
 
 # Producto específico por ID
-curl http://localhost:8080/api/products/0
+curl http://localhost:8081/api/products/0
 ```
 
 ---
@@ -147,28 +147,25 @@ curl http://localhost:8080/api/products/0
 
 ```bash
 # Usuario 0: Agregar Laptop (ID 0)
-curl -X POST http://localhost:8080/api/cart/add \
+curl -X POST http://localhost:8081/api/cart/add \
   -H "Content-Type: application/json" \
   -d '{
-    "userId": 0,
     "productId": 0,
     "quantity": 1
   }'
 
 # Usuario 0: Agregar Mouse (ID 1)
-curl -X POST http://localhost:8080/api/cart/add \
+curl -X POST http://localhost:8081/api/cart/add \
   -H "Content-Type: application/json" \
   -d '{
-    "userId": 0,
     "productId": 1,
     "quantity": 2
   }'
 
 # Usuario 0: Agregar Monitor (ID 3)
-curl -X POST http://localhost:8080/api/cart/add \
+curl -X POST http://localhost:8081/api/cart/add \
   -H "Content-Type: application/json" \
   -d '{
-    "userId": 0,
     "productId": 3,
     "quantity": 1
   }'
@@ -179,7 +176,7 @@ curl -X POST http://localhost:8080/api/cart/add \
 ### PASO 7: Ver Carrito
 
 ```bash
-curl http://localhost:8080/api/cart/0
+curl http://localhost:8081/api/cart/0
 ```
 
 **Respuesta esperada:**
@@ -216,11 +213,9 @@ curl http://localhost:8080/api/cart/0
 ### PASO 8: Crear Orden
 
 ```bash
-curl -X POST http://localhost:8080/api/orders \
+curl -X POST http://localhost:8081/api/orders \
   -H "Content-Type: application/json" \
-  -d '{
-    "userId": 0
-  }'
+  -d '{}'
 ```
 
 **Esto hará:**
@@ -235,13 +230,13 @@ curl -X POST http://localhost:8080/api/orders \
 
 ```bash
 # Órdenes de un usuario
-curl http://localhost:8080/api/orders/user/0
+curl http://localhost:8081/api/orders/user/0
 
 # Detalle de una orden específica
-curl http://localhost:8080/api/orders/0
+curl http://localhost:8081/api/orders/0
 
 # Todas las órdenes del sistema
-curl http://localhost:8080/api/orders
+curl http://localhost:8081/api/orders
 ```
 
 ---
@@ -250,8 +245,8 @@ curl http://localhost:8080/api/orders
 
 ```bash
 # Ver que el stock de los productos disminuyó
-curl http://localhost:8080/api/products/0
-curl http://localhost:8080/api/products/1
+curl http://localhost:8081/api/products/0
+curl http://localhost:8081/api/products/1
 ```
 
 ---
