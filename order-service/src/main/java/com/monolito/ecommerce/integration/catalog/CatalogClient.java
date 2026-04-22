@@ -5,10 +5,13 @@ import com.monolito.ecommerce.shared.exception.BusinessException;
 import com.monolito.ecommerce.shared.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,13 +32,12 @@ public class CatalogClient {
 
     public ProductSnapshot getProductById(Long productId) {
         try {
+            RequestEntity<Void> request = new RequestEntity<>(buildAuthHeaders(), HttpMethod.GET,
+                    URI.create(catalogBaseUrl + "/" + productId));
             ResponseEntity<ApiResponse<ProductSnapshot>> response = restTemplate.exchange(
-                    catalogBaseUrl + "/{id}",
-                    HttpMethod.GET,
-                    null,
+                    request,
                     new ParameterizedTypeReference<ApiResponse<ProductSnapshot>>() {
-                    },
-                    productId);
+                    });
 
             ApiResponse<ProductSnapshot> body = response.getBody();
             if (body == null || !body.isSuccess() || body.getData() == null) {
@@ -45,6 +47,8 @@ public class CatalogClient {
             return body.getData();
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException("Producto", productId);
+        } catch (HttpClientErrorException ex) {
+            throw new BusinessException("catalog-service respondió " + ex.getStatusCode().value() + " al consultar producto");
         } catch (ResourceNotFoundException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -79,10 +83,21 @@ public class CatalogClient {
     private void updateStock(Long productId, Integer stock) {
         try {
             URI uri = URI.create(catalogBaseUrl + "/" + productId + "/stock?stock=" + stock);
-            RequestEntity<Void> request = new RequestEntity<>(HttpMethod.PUT, uri);
+            RequestEntity<Void> request = new RequestEntity<>(buildAuthHeaders(), HttpMethod.PUT, uri);
             restTemplate.exchange(request, String.class);
+        } catch (HttpClientErrorException ex) {
+            throw new BusinessException("catalog-service respondió " + ex.getStatusCode().value() + " al actualizar stock");
         } catch (Exception ex) {
             throw new BusinessException("No se pudo actualizar stock en catalog-service");
         }
+    }
+
+    private HttpHeaders buildAuthHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getCredentials() instanceof String token && !token.isBlank()) {
+            headers.setBearerAuth(token);
+        }
+        return headers;
     }
 }
