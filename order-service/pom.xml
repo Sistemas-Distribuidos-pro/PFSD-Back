@@ -79,6 +79,25 @@
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 
+		<!-- Kafka producer/consumer -->
+		<dependency>
+				<groupId>org.springframework.kafka</groupId>
+				<artifactId>spring-kafka</artifactId>
+		</dependency>
+
+		<!-- Kafka embebido para desarrollo local (sin scope=test para arrancar con la app) -->
+		<dependency>
+				<groupId>org.springframework.kafka</groupId>
+				<artifactId>spring-kafka-test</artifactId>
+		</dependency>
+
+		<!-- Email -->
+		<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
