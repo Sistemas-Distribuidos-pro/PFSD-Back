@@ -17,11 +17,9 @@ public class AnomalyConsumer {
     private static final Logger log = LoggerFactory.getLogger(AnomalyConsumer.class);
 
     private final AlertProducer alertProducer;
-    private final EmailNotificationService emailService;
 
-    public AnomalyConsumer(AlertProducer alertProducer, EmailNotificationService emailService) {
+    public AnomalyConsumer(AlertProducer alertProducer) {
         this.alertProducer = alertProducer;
-        this.emailService = emailService;
     }
 
     @KafkaListener(topics = KafkaConfig.TOPIC_ORDERS, groupId = "anomaly-detector-group")
@@ -46,6 +44,5 @@ public class AnomalyConsumer {
                 LocalDateTime.now());
 
         alertProducer.publish(alerta);
-        emailService.enviarAlerta(alerta);
     }
 }

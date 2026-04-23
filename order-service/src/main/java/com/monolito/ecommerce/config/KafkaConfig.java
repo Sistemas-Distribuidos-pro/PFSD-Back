@@ -30,6 +30,7 @@ public class KafkaConfig {
 
     public static final String TOPIC_ORDERS = "orders";
     public static final String TOPIC_ALERTS = "alerts";
+    public static final String TOPIC_NOTIFICATIONS = "notifications";
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -45,6 +46,11 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic notificationsTopic() {
+        return TopicBuilder.name(TOPIC_NOTIFICATIONS).partitions(1).replicas(1).build();
+    }
+
+    @Bean
     public ProducerFactory<String, Object> producerFactory(
             @Autowired(required = false) EmbeddedKafkaBroker embeddedKafkaBroker) {
         String servers = embeddedKafkaBroker != null
@@ -55,7 +61,7 @@ public class KafkaConfig {
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaProducerFactory<>(config);
     }
 
@@ -79,9 +85,7 @@ public class KafkaConfig {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "com.monolito.ecommerce.*");
-        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-                "com.monolito.ecommerce.order.event.OrderEvent");
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
