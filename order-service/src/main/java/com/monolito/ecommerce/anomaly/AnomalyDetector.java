@@ -9,7 +9,7 @@ import com.monolito.ecommerce.order.event.OrderEvent;
 
 public class AnomalyDetector {
 
-    private static final BigDecimal HIGH_VALUE_THRESHOLD = new BigDecimal("1.00");
+    private static final BigDecimal HIGH_VALUE_THRESHOLD = new BigDecimal("500.00");
     private static final int HIGH_ITEM_COUNT_THRESHOLD = 10;
 
     // Funciones puras — building blocks
