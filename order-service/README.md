@@ -35,3 +35,17 @@ Servicio de órdenes y checkout sincrono del backend PFSD. Vive en `8081` y cent
 4. Se valida stock en `catalog-service`.
 5. Se descuenta inventario y se persiste la orden en memoria.
 6. Se limpia el carrito.
+
+## History persistence in S3
+
+- `orders` and `alerts` are persisted as JSON objects in Amazon S3 for batch analytics.
+- `notifications` are intentionally excluded from this history layer.
+- `OrderHistoryConsumer` listens to `orders` and `AlertHistoryConsumer` listens to `alerts`.
+- Objects are written under `orders/year=YYYY/month=MM/day=DD/` and `alerts/year=YYYY/month=MM/day=DD/`.
+- History persistence is best-effort and does not block checkout or anomaly processing if S3 is unavailable.
+
+### Configuration
+
+- `history.s3.enabled` controls whether history persistence is active.
+- `history.s3.bucket-name` sets the destination bucket.
+- `history.s3.region` sets the AWS region used by the S3 client.

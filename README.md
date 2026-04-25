@@ -20,6 +20,15 @@ No hay Kafka, Spark ni una capa event-driven todavía. El flujo actual es sincro
 4. El checkout se completa con `POST /api/orders` en `order-service`.
 5. `order-service` valida stock contra `catalog-service`, descuenta inventario y limpia el carrito.
 
+### Historial para batch analytics
+
+El backend también persiste historial de eventos en Amazon S3 para análisis batch sin alterar el flujo online.
+
+- Se guardan únicamente los eventos de `orders` y `alerts`.
+- `notifications` no se persisten en S3.
+- La escritura ocurre desde consumidores Kafka dedicados, como efecto secundario.
+- Los objetos se organizan por prefijo y fecha UTC en S3.
+
 ## Documentación por servicio
 
 - [order-service/README.md](order-service/README.md)

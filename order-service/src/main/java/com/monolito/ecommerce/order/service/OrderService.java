@@ -1,17 +1,5 @@
 package com.monolito.ecommerce.order.service;
 
-import com.monolito.ecommerce.cart.model.CartItem;
-import com.monolito.ecommerce.cart.service.CartService;
-import com.monolito.ecommerce.integration.catalog.CatalogClient;
-import com.monolito.ecommerce.order.model.Order;
-import com.monolito.ecommerce.order.model.OrderItem;
-import com.monolito.ecommerce.order.model.OrderStatus;
-import com.monolito.ecommerce.shared.exception.BusinessException;
-import com.monolito.ecommerce.shared.exception.ResourceNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,24 +8,35 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.monolito.ecommerce.cart.model.CartItem;
+import com.monolito.ecommerce.cart.service.CartService;
+import com.monolito.ecommerce.integration.catalog.CatalogClient;
+import com.monolito.ecommerce.order.event.OrderEvent;
+import com.monolito.ecommerce.order.kafka.OrderProducer;
+import com.monolito.ecommerce.order.model.Order;
+import com.monolito.ecommerce.order.model.OrderItem;
+import com.monolito.ecommerce.order.model.OrderStatus;
+import com.monolito.ecommerce.shared.exception.BusinessException;
+import com.monolito.ecommerce.shared.exception.ResourceNotFoundException;
+
 /**
  * Servicio de Órdenes
  *
- * TRANSACCIONES SIMULADAS:
- * - En un monolito con DB, usarías @Transactional para ACID
- * - Aquí simulamos rollback manual si algo falla
- * - Thread-safe con synchronized
+ * TRANSACCIONES SIMULADAS: - En un monolito con DB, usarías @Transactional para
+ * ACID - Aquí simulamos rollback manual si algo falla - Thread-safe con
+ * synchronized
  *
- * VENTAJAS DEL MONOLITO:
- * - Flujo en un solo proceso
- * - Acceso directo a ProductService, CartService, UserService
- * - NO hay latencia de red
- * - NO hay serialización/deserialización
- * - FÁCIL mantener consistencia (en este caso, manual)
+ * VENTAJAS DEL MONOLITO: - Flujo en un solo proceso - Acceso directo a
+ * ProductService, CartService, UserService - NO hay latencia de red - NO hay
+ * serialización/deserialización - FÁCIL mantener consistencia (en este caso,
+ * manual)
  *
- * DESVENTAJAS:
- * - Si falla la app, se pierden los datos (no hay persistencia)
- * - Escalabilidad limitada a recursos de una máquina
+ * DESVENTAJAS: - Si falla la app, se pierden los datos (no hay persistencia) -
+ * Escalabilidad limitada a recursos de una máquina
  */
 @Service
 public class OrderService {
@@ -49,28 +48,26 @@ public class OrderService {
     // Dependencias externas
     private final CartService cartService;
     private final CatalogClient catalogClient;
+    private final OrderProducer orderProducer;
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
-    public OrderService(CartService cartService, CatalogClient catalogClient) {
+    public OrderService(CartService cartService, CatalogClient catalogClient, OrderProducer orderProducer) {
         this.cartService = cartService;
         this.catalogClient = catalogClient;
+        this.orderProducer = orderProducer;
     }
 
     /**
      * Crear orden desde el carrito
      *
-     * SIMULACIÓN DE TRANSACCIÓN:
-     * 1. Validar usuario y carrito
-     * 2. Validar stock de todos los productos
-     * 3. Descontar inventario
-     * 4. Si algo falla, hacer ROLLBACK manual
-     * 5. Crear orden
-     * 6. Limpiar carrito
+     * SIMULACIÓN DE TRANSACCIÓN: 1. Validar usuario y carrito 2. Validar stock
+     * de todos los productos 3. Descontar inventario 4. Si algo falla, hacer
+     * ROLLBACK manual 5. Crear orden 6. Limpiar carrito
      *
      * En un monolito real con BD:
      *
-     * @Transactional haría esto automáticamente
-     *                Si algo falla, la operación se revierte
+     * @Transactional haría esto automáticamente Si algo falla, la operación se
+     * revierte
      */
     public synchronized Order createOrder(Long userId) {
         // PASO 2: Obtener carrito
@@ -94,10 +91,10 @@ public class OrderService {
 
         List<OrderItem> orderItems = cartItems.stream()
                 .map(cartItem -> new OrderItem(
-                        cartItem.getProductId(),
-                        cartItem.getProductName(),
-                        cartItem.getPrice(),
-                        cartItem.getQuantity()))
+                cartItem.getProductId(),
+                cartItem.getProductName(),
+                cartItem.getPrice(),
+                cartItem.getQuantity()))
                 .toList();
 
         BigDecimal total = cartService.calculateTotal(userId);
@@ -122,6 +119,14 @@ public class OrderService {
             order.setStatus(OrderStatus.CONFIRMED);
             orderDatabase.put(orderId, order);
 
+            OrderEvent event = new OrderEvent(
+                    order.getId(),
+                    order.getUserId(),
+                    order.getTotal(),
+                    orderItems.size(),
+                    order.getCreatedAt());
+            orderProducer.publish(event);
+
             // PASO 6: Limpiar carrito
             cartService.clearCart(userId);
 
@@ -142,7 +147,6 @@ public class OrderService {
             // Nota académica: En un monolito con BD y @Transactional,
             // este rollback sería AUTOMÁTICO. Aquí lo hacemos manual
             // para demostrar el concepto.
-
             throw new BusinessException("No se pudo crear la orden: " + e.getMessage(), e);
         }
 
