@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.monolito.ecommerce.anomaly.AlertEvent;
 import com.monolito.ecommerce.order.event.OrderEvent;
 
@@ -32,16 +33,15 @@ public class HistoryWriterService {
     private static final DateTimeFormatter FILE_TIMESTAMP_FORMAT = DateTimeFormatter
             .ofPattern("yyyyMMdd'T'HHmmssSSS'Z'")
             .withZone(ZoneOffset.UTC);
+        private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
 
-    private final ObjectMapper objectMapper;
     private final HistoryS3Properties properties;
     private final ObjectProvider<S3Client> s3ClientProvider;
 
     public HistoryWriterService(
-            ObjectMapper objectMapper,
             HistoryS3Properties properties,
             ObjectProvider<S3Client> s3ClientProvider) {
-        this.objectMapper = objectMapper;
         this.properties = properties;
         this.s3ClientProvider = s3ClientProvider;
     }
@@ -97,7 +97,7 @@ public class HistoryWriterService {
         String objectKey = buildObjectKey(prefix, filePrefix, storedAt, eventId);
 
         try {
-            byte[] payload = objectMapper.writeValueAsBytes(document);
+            byte[] payload = OBJECT_MAPPER.writeValueAsBytes(document);
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(properties.getBucketName())
                     .key(objectKey)
